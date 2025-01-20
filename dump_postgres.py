@@ -2,9 +2,20 @@ import os
 import subprocess
 from dotenv import load_dotenv
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
+
+def validate_env_vars(required_vars):
+    """Validate required environment variables."""
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    if missing_vars:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 def dump_postgres():
     """Dump PostgreSQL database to a file."""
@@ -24,7 +35,8 @@ def dump_postgres():
             "--port", os.getenv("POSTGRES_PORT"),
             "--username", os.getenv("POSTGRES_USER"),
             "--dbname", os.getenv("POSTGRES_DATABASE"),
-            "--file", dump_file
+            "--file", dump_file,
+            "--no-password"
         ]
 
         # Run the command with the password in the environment
@@ -33,11 +45,20 @@ def dump_postgres():
             check=True,
             env={**os.environ, "PGPASSWORD": os.getenv("POSTGRES_PASSWORD")},
         )
-        print(f"Database dump successful: {dump_file}")
+        logger.info(f"Database dump successful: {dump_file}")
         return dump_file
     except subprocess.CalledProcessError as e:
-        print(f"Error during database dump: {e}")
+        logger.error(f"Error during database dump: {e}")
         return None
 
 if __name__ == "__main__":
-    dump_postgres()
+    # Validate required environment variables
+    required_env_vars = [
+        "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_USER",
+        "POSTGRES_PASSWORD", "POSTGRES_DATABASE"
+    ]
+    try:
+        validate_env_vars(required_env_vars)
+        dump_postgres()
+    except ValueError as e:
+        logger.error(e)

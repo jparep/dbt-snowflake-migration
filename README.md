@@ -1,6 +1,6 @@
 # DBT Snowflake Migration
 
-This guide provides instructions on how to use dbt to migrate a PostgreSQL database to Snowflake.
+This project provides instructions on how to use dbt to migrate a PostgreSQL database to Snowflake.
 
 ## Prerequisites
 

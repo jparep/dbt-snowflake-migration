@@ -6,26 +6,24 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: migration_container
-    depends_on:
-      postgres_container:  # Reference the existing container name
-        condition: service_healthy
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DATABASE}
-      POSTGRES_HOST: postgres_container  # Reference the existing PostgreSQL container
-      POSTGRES_PORT: 5432
+      POSTGRES_HOST: postgres_container  # Use the running container's name
+      POSTGRES_PORT: 5433  # External port of the running container
       SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
       SNOWFLAKE_USER: ${SNOWFLAKE_USER}
       SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
       SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE}
       SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA}
     command: dbt run --project-dir postgres_snowflake
+    networks:
+      - bridge_network
     volumes:
       - .:/app
-    networks:
-      - migration_network
+      - ~/.dbt:/root/.dbt  # Mount the dbt profiles directory
 
 networks:
-  migration_network:
-    driver: bridge
+  bridge_network:
+    external: true

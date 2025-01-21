@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: postgres_source
+    schema: test_schema  # Matches the schema in your Postgres database
+    database: test_db
+    tables:
+      - name: employee  # Replace with the actual table name in Postgres
